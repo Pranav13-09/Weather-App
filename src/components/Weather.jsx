@@ -103,7 +103,7 @@ const WeatherPage = () => {
     );
   }
 
-  const { name, main, weather } = weatherData;
+  const {  main, weather } = weatherData;
   let WeatherIcon = getIcons(weather[0].main);
 
   console.log(weather[0].main,"i am main")
