@@ -3,8 +3,6 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { Provider } from "react-redux";
 import store from "./store";
-import { BrowserRouter as Router, Route, Navigate } from "react-router-dom";
-import Weather from "./components/Weather.jsx";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
