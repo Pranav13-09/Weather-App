@@ -16,6 +16,7 @@ const WeatherPage = () => {
   useEffect(() => {
     if(error){
       toast.error("Location is Invalid. Please Enter Correct Location.");
+      console.log("i am here")
       dispatch(fetchWeatherFailure(null));
     }
     const fetchWeatherData = async (latitude, longitude) => {
@@ -28,10 +29,12 @@ const WeatherPage = () => {
         dispatch(fetchWeatherFailure(error.message));
       }
     };
+     const fetchCurrentLocationWeather = async () => {
+    try {
+      if (navigator.permissions) {
+        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
 
-    const fetchCurrentLocationWeather = async () => {
-      try {
-        if (navigator.geolocation) {
+        if (permissionStatus.state === 'granted') {
           navigator.geolocation.getCurrentPosition(
             async (position) => {
               const { latitude, longitude } = position.coords;
@@ -40,22 +43,42 @@ const WeatherPage = () => {
             (error) => {
               console.error('Error getting current location:', error);
               dispatch(fetchWeatherFailure('Error getting current location'));
-             
             }
           );
+        } else if (permissionStatus.state === 'prompt') {
+           const userConsent = window.confirm('This site would like to access your location. Allow?');
+        if (userConsent) {
+          permissionStatus.onchange = () => {
+            if (permissionStatus.state === 'granted') {
+              fetchCurrentLocationWeather();
+            }
+          };
+          await permissionStatus.request();
         } else {
-          console.error('Geolocation is not supported by this browser');
-          dispatch(fetchWeatherFailure('Geolocation is not supported'));
-          
+      
+          console.log('User denied location permission');
         }
-      } catch (error) {
-        console.error('Error fetching weather data:', error);
-        dispatch(fetchWeatherFailure('Error fetching weather data'));
-        
+        } else if (permissionStatus.state === 'denied') {
+          // The user denied permission
+          // You can handle this case accordingly
+        }
+      } else {
+        console.error('Geolocation is not supported by this browser');
+        dispatch(fetchWeatherFailure('Geolocation is not supported'));
       }
-    };
-
-    fetchCurrentLocationWeather();
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      dispatch(fetchWeatherFailure('Error fetching weather data'));
+    }
+  };
+  if (navigator.permissions) {
+    navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+      if (permissionStatus.state === 'granted') {
+        fetchCurrentLocationWeather();
+      }
+    });
+  }
+  
   }, [dispatch,error]);
 
   const handleSearch = async (e) => {
@@ -77,10 +100,10 @@ const WeatherPage = () => {
       dispatch(fetchWeatherFailure(error.message));
     }
   };
-
-
-
-
+// if (error) {
+//   toast.error("Location is Invalid. Please Enter Correct Location.");
+//   // ...
+// }
 
   if (loading) {
     return(
@@ -90,15 +113,33 @@ const WeatherPage = () => {
     )
   }
 
-
-
-
-
   if (!weatherData) {
     return (
-      <div className="flex items-center h-80">
-       <Loader/>
-      </div>
+      <section className="relative bg-gray-900  min-h-screen">
+           <div class="relative container pt-8 px-4 mb-10 md:mb-16 mx-auto text-center">
+    
+            <h2 class="mt-8 mb-8 lg:mb-12 text-white text-4xl lg:text-6xl font-semibold">
+              Meteorology App
+            </h2>
+           
+            <p class="max-w-3xl mx-auto mb-8 lg:mb-12 text-white text-xl opacity-50">
+              Find out the current weather situation around the world
+            </p>
+            <input
+              value={city}
+              onChange={e => setCity(e.target.value)}
+              placeholder="Search City"
+              class="relative z-10 inline-block w-full md:w-auto mb-2  px-3 py-2 mr-4  font-medium leading-normal bg-transparent border-2 rounded-lg text-green-400 "
+            ></input>
+            <button
+              onClick={ handleSearch}
+              type="button"
+              className="inline-flex items-center px-3 pr-3 28 text-center py-3 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Search
+            </button>
+          </div>
+      </section>
       
     );
   }
@@ -113,11 +154,11 @@ const WeatherPage = () => {
 
   return (
     
-        <section class="relative bg-gray-900  min-h-screen">
+        <section className="relative bg-gray-900  min-h-screen">
           
        
              
-          <div class="relative container pt-8 px-4 mb-10 md:mb-16 mx-auto text-center">
+          <div className="relative container pt-8 px-4 mb-10 md:mb-16 mx-auto text-center">
     
             <h2 class="mt-8 mb-8 lg:mb-12 text-white text-4xl lg:text-6xl font-semibold">
               Meteorology App
